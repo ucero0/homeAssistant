@@ -52,6 +52,7 @@ services:
       - homeassistant
     environment:
       - TZ=Europe/Madrid
+      - NODE_OPTIONS=--max_old_space_size=4096
 
 
   # Zigbee2MQTT: Zigbee coordinator via MQTT
