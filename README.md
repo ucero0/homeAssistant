@@ -21,7 +21,7 @@ Complete Docker Compose setup for Home Assistant with Zigbee, MQTT, and automati
 
 1. **Clone this repository:**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/ucero0/homeAssistant.git
    cd homeAssistant
    ```
 
