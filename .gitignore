@@ -1,0 +1,38 @@
+# Home Assistant Configuration
+config/.storage/
+config/home-assistant_v2.db
+config/home-assistant.log*
+config/secrets.yaml
+config/*.db
+config/*.log
+
+# Mosquitto
+mosquitto/data/
+mosquitto/log/
+mosquitto/config/passwd
+
+# Node-RED
+node-red/data/
+
+# Zigbee2MQTT
+zigbee2mqtt/data/
+
+# ESPHome (if enabled)
+esphome/config/
+
+# Docker
+.env
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+

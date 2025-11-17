@@ -1,0 +1,94 @@
+
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:stable
+    volumes:
+      - ./config:/config
+    environment:
+      - TZ=Europe/Madrid
+    restart: unless-stopped
+    ports:
+      - "8123:8123"
+    networks:
+      - homeassistant
+    # USB devices:
+    # Sonoff dongle supports both Zigbee and Thread
+    # Both services can access it, but typically can't use simultaneously
+    # Uncomment to allow Home Assistant to access the dongle for Thread/Matter:
+    devices:
+      - "/dev/zigbee:/dev/zigbee"  # Sonoff dongle (shared with Zigbee2MQTT)
+    privileged: true
+    depends_on:
+      - mosquitto
+      - zigbee2mqtt
+      - nodered
+
+  mosquitto:
+    container_name: mosquitto
+    image: eclipse-mosquitto:latest
+    restart: unless-stopped
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    ports:
+      - "1883:1883"   # MQTT port
+      - "9001:9001"   # WebSocket port (optional, for MQTT over WebSocket)
+    networks:
+      - homeassistant
+
+  # Node-RED: Visual automation and flow builder
+  # Connect via: Settings -> Devices & Services -> Add Integration -> Node-RED
+  nodered:
+    container_name: nodered
+    image: nodered/node-red:latest
+    restart: unless-stopped
+    volumes:
+      - ./node-red/data:/data
+    ports:
+      - "1880:1880"   # Web UI
+    networks:
+      - homeassistant
+    environment:
+      - TZ=Europe/Madrid
+
+
+  # Zigbee2MQTT: Zigbee coordinator via MQTT
+  # REQUIRES: Mosquitto MQTT broker (already configured above)
+  zigbee2mqtt:
+    container_name: zigbee2mqtt
+    image: koenkk/zigbee2mqtt:latest
+    restart: unless-stopped
+    volumes:
+      - ./zigbee2mqtt/data:/app/data
+    ports:
+      - "8080:8080"   # Web UI
+    devices:
+      # Sonoff dongle - supports both Zigbee and Thread
+      # Shared with Home Assistant (see above)
+      # Note: Typically can only use one protocol at a time
+      - "/dev/zigbee:/dev/zigbee"
+    networks:
+      - homeassistant
+    environment:
+      - TZ=Europe/Madrid
+    depends_on:
+      - mosquitto
+
+  # ESPHome: Manage ESP32/ESP8266 devices and firmware
+  # esphome:
+  #   container_name: esphome
+  #   image: ghcr.io/esphome/esphome:latest
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./esphome/config:/config
+  #   ports:
+  #     - "6052:6052"   # Web UI
+  #   networks:
+  #     - homeassistant
+  #   privileged: true
+
+networks:
+  homeassistant:
+    driver: bridge
