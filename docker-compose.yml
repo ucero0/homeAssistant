@@ -1,29 +1,38 @@
 
 services:
-  homeassistant:
-    container_name: homeassistant
-    image: ghcr.io/home-assistant/home-assistant:stable
+  heimdall:
+    image: lscr.io/linuxserver/heimdall:latest
+    container_name: heimdall
     volumes:
-      - ./config:/config
-    environment:
-      - TZ=Europe/Madrid
-    restart: unless-stopped
+      - ./heimdall/config:/config
     ports:
-      - "8123:8123"
+      - 80:80
     networks:
       - homeassistant
-    # USB devices:
-    # Sonoff dongle supports both Zigbee and Thread
-    # Both services can access it, but typically can't use simultaneously
-    # Uncomment to allow Home Assistant to access the dongle for Thread/Matter:
-    devices:
-      - "/dev/zigbee:/dev/zigbee"  # Sonoff dongle (shared with Zigbee2MQTT)
-    privileged: true
-    depends_on:
-      - mosquitto
-      - zigbee2mqtt
-      - nodered
-
+    restart: unless-stopped
+  # homeassistant:
+  #   container_name: homeassistant
+  #   image: ghcr.io/home-assistant/home-assistant:stable
+  #   volumes:
+  #     - ./config:/config
+  #   environment:
+  #     - TZ=Europe/Madrid
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8123:8123"
+  #   networks:
+  #     - homeassistant
+  #   # USB devices:
+  #   # Sonoff dongle supports both Zigbee and Thread
+  #   # Both services can access it, but typically can't use simultaneously
+  #   # Uncomment to allow Home Assistant to access the dongle for Thread/Matter:
+  #   devices:
+  #     - "/dev/zigbee:/dev/zigbee"  # Sonoff dongle (shared with Zigbee2MQTT)
+  #   privileged: true
+  #   depends_on:
+  #     - mosquitto
+  #     - zigbee2mqtt
+  #     - nodered
   mosquitto:
     container_name: mosquitto
     image: eclipse-mosquitto:latest
@@ -51,7 +60,7 @@ services:
     networks:
       - homeassistant
     environment:
-      - TZ=Europe/Madrid
+      - TZ=Asia/Dubai
       - NODE_OPTIONS=--max_old_space_size=4096
 
 
@@ -69,11 +78,12 @@ services:
       # Sonoff dongle - supports both Zigbee and Thread
       # Shared with Home Assistant (see above)
       # Note: Typically can only use one protocol at a time
-      - "/dev/zigbee:/dev/zigbee"
+      # - "/dev/zigbee:/dev/zigbee"
+      - "/dev/ttyUSB0:/dev/ttyUSB0"
     networks:
       - homeassistant
     environment:
-      - TZ=Europe/Madrid
+      - TZ=Asia/Dubai
     depends_on:
       - mosquitto
 
