@@ -26,7 +26,7 @@ services:
     # Sonoff dongle supports both Zigbee and Thread
     # Both services can access it, but typically can't use simultaneously
     # Uncomment to allow Home Assistant to access the dongle for Thread/Matter:
-    devices:
+    # devices:
       # - "/dev/zigbee:/dev/zigbee"  # Sonoff dongle (shared with Zigbee2MQTT)
     privileged: true
     depends_on:
