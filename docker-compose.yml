@@ -6,7 +6,7 @@ services:
     volumes:
       - ./heimdall/config:/config
     ports:
-      - 0.0.0.0:80:80
+      - 80:80
     networks:
       - homeassistant
     restart: unless-stopped
@@ -19,7 +19,7 @@ services:
       - TZ=Asia/Dubai
     restart: unless-stopped
     ports:
-      - "0.0.0.0:8123:8123"
+      - "8123:8123"
     networks:
       - homeassistant
     # USB devices:
@@ -42,8 +42,8 @@ services:
       - ./mosquitto/data:/mosquitto/data
       - ./mosquitto/log:/mosquitto/log
     ports:
-      - "0.0.0.0:1883:1883"   # MQTT port
-      - "0.0.0.0:9001:9001"   # WebSocket port (optional, for MQTT over WebSocket)
+      - "1883:1883"   # MQTT port
+      - "9001:9001"   # WebSocket port (optional, for MQTT over WebSocket)
     networks:
       - homeassistant
 
