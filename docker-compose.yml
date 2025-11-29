@@ -1,5 +1,5 @@
 
-services:
+sservices:
   heimdall:
     image: lscr.io/linuxserver/heimdall:latest
     container_name: heimdall
@@ -10,6 +10,7 @@ services:
     networks:
       - homeassistant
     restart: unless-stopped
+
   homeassistant:
     container_name: homeassistant
     image: ghcr.io/home-assistant/home-assistant:stable
@@ -18,21 +19,21 @@ services:
     environment:
       - TZ=Asia/Dubai
     restart: unless-stopped
-    ports:
-      - "8123:8123"
-    networks:
-      - homeassistant
-    # USB devices:
-    # Sonoff dongle supports both Zigbee and Thread
-    # Both services can access it, but typically can't use simultaneously
-    # Uncomment to allow Home Assistant to access the dongle for Thread/Matter:
-    # devices:
-      # - "/dev/zigbee:/dev/zigbee"  # Sonoff dongle (shared with Zigbee2MQTT)
     privileged: true
+    network_mode: host          # NECESARIO para Matter
     depends_on:
       - mosquitto
       - zigbee2mqtt
       - nodered
+
+  matter-server:
+    container_name: matter-server
+    image: ghcr.io/home-assistant-libs/python-matter-server:stable
+    network_mode: host          # NECESARIO para mDNS / Thread / Matter
+    restart: unless-stopped
+    volumes:
+      - ./matter:/data
+
   mosquitto:
     container_name: mosquitto
     image: eclipse-mosquitto:latest
@@ -42,13 +43,11 @@ services:
       - ./mosquitto/data:/mosquitto/data
       - ./mosquitto/log:/mosquitto/log
     ports:
-      - "1883:1883"   # MQTT port
-      - "9001:9001"   # WebSocket port (optional, for MQTT over WebSocket)
+      - "1883:1883"
+      - "9001:9001"
     networks:
       - homeassistant
 
-  # Node-RED: Visual automation and flow builder
-  # Connect via: Settings -> Devices & Services -> Add Integration -> Node-RED
   nodered:
     container_name: nodered
     image: nodered/node-red:latest
@@ -56,16 +55,13 @@ services:
     volumes:
       - ./node-red/data:/data
     ports:
-      - "1880:1880"   # Web UI
+      - "1880:1880"
     networks:
       - homeassistant
     environment:
       - TZ=Asia/Dubai
       - NODE_OPTIONS=--max_old_space_size=4096
 
-
-  # Zigbee2MQTT: Zigbee coordinator via MQTT
-  # REQUIRES: Mosquitto MQTT broker (already configured above)
   zigbee2mqtt:
     container_name: zigbee2mqtt
     image: koenkk/zigbee2mqtt:latest
@@ -73,12 +69,8 @@ services:
     volumes:
       - ./zigbee2mqtt/data:/app/data
     ports:
-      - "8080:8080"   # Web UI
+      - "8080:8080"
     devices:
-      # Sonoff dongle - supports both Zigbee and Thread
-      # Shared with Home Assistant (see above)
-      # Note: Typically can only use one protocol at a time
-      # - "/dev/zigbee:/dev/zigbee"
       - "/dev/ttyUSB0:/dev/ttyUSB0"
     networks:
       - homeassistant
@@ -86,19 +78,6 @@ services:
       - TZ=Asia/Dubai
     depends_on:
       - mosquitto
-
-  # ESPHome: Manage ESP32/ESP8266 devices and firmware
-  # esphome:
-  #   container_name: esphome
-  #   image: ghcr.io/esphome/esphome:latest
-  #   restart: unless-stopped
-  #   volumes:
-  #     - ./esphome/config:/config
-  #   ports:
-  #     - "6052:6052"   # Web UI
-  #   networks:
-  #     - homeassistant
-  #   privileged: true
 
 networks:
   homeassistant:
